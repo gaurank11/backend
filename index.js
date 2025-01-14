@@ -32,7 +32,7 @@ app.post('/generate-outline', async (req, res) => {
                     content: `Generate an outline for an article or blog titled "${title}". Include these headings: Introduction, Types, Benefits, Challenges in Adoption, Role of Technology, Conclusion.`,
                 },
             ],
-            max_tokens: 3000,
+            max_tokens: 4000,
         });
         const rawOutline = response.choices[0].message.content.trim().split("\n");
         const outline = rawOutline.filter((line) => line.trim() !== ""); // Remove empty lines
