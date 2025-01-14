@@ -17,16 +17,29 @@ app.post('/generate-outline', async (req, res) => {
     const { title } = req.body;
 
     try {
-        const response = await openai.createCompletion({
+        const response = await openai.chat.completions.create({
             model: 'gpt-4',
-            prompt: `Generate an outline for an article or blog titled "${title}". Include these headings: Introduction, Types of Renewable Energy, Benefits of Sustainable Energy, Challenges in Adoption, Role of Technology in Sustainable Energy, Conclusion.`,
-            max_tokens: 300,
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are a helpful assistant that creates blog outlines.`,
+                },
+                {
+                    role: 'user',
+                    content: `Generate an outline for an article or blog titled "${title}". Include these headings: Introduction, Types, Benefits, Challenges in Adoption, Role of Technology, Conclusion.`,
+                },
+            ],
+            max_tokens: 3000,
         });
-        res.json({ outline: response.data.choices[0].text.trim().split("\n") });
+        const rawOutline = response.choices[0].message.content.trim().split("\n");
+        const outline = rawOutline.filter((line) => line.trim() !== ""); // Remove empty lines
+        res.json({ outline });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
 });
+
+
 
 // Generate Content in Parallel
 app.post('/generate-content', async (req, res) => {
@@ -34,19 +47,30 @@ app.post('/generate-content', async (req, res) => {
 
     try {
         const contentPromises = outline.map((heading) =>
-            openai.createCompletion({
+            openai.chat.completions.create({
                 model: 'gpt-4',
-                prompt: `Write detailed content for the heading: "${heading}".`,
-                max_tokens: 500,
+                messages: [
+                    {
+                        role: 'system',
+                        content: `You are a detailed content writer.`,
+                    },
+                    {
+                        role: 'user',
+                        content: `Write detailed content for the heading: "${heading}".`,
+                    },
+                ],
+                max_tokens: 10000,
             })
         );
         const responses = await Promise.all(contentPromises);
-        const content = responses.map((response) => response.data.choices[0].text.trim());
+        const content = responses.map((response) => response.choices[0].message.content.trim());
         res.json({ content });
     } catch (error) {
         res.status(500).send({ error: error.message });
     }
 });
+
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
