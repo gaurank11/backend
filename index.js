@@ -32,7 +32,7 @@ app.post('/generate-outline', async (req, res) => {
                     content: `Generate an outline for an article or blog titled "${title}". Include these headings: Introduction, Types, Benefits, Challenges in Adoption, Role of Technology, Conclusion.`,
                 },
             ],
-            max_tokens: 4000,
+            max_tokens: 2000,
         });
         const rawOutline = response.choices[0].message.content.trim().split("\n");
         const outline = rawOutline.filter((line) => line.trim() !== ""); // Remove empty lines
@@ -62,7 +62,7 @@ app.post('/generate-content', async (req, res) => {
                         content: `Write detailed content for the heading: "${heading}".`,
                     },
                 ],
-                max_tokens: 10000,
+                max_tokens: 5000,
             })
         );
         const responses = await Promise.all(contentPromises);
